@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/andymartinezot/crud-app-go/backend/internal/models"
+	"github.com/andymartinezot/todo-app/server/models"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mong/options"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
