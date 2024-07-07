@@ -9,9 +9,12 @@ import (
 	"os"
 
 	"github.com/andymartinezot/todo-app/server/models"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var collection *mongo.Collection
@@ -28,9 +31,9 @@ func createDBInstance() {
 	dbName := os.Getenv("DB_NAME")
 	collName := os.Getenv("DB_COLLECTION_NAME")
 
-	clientOptions := options.Client().ApplyURL(connectionString)
+	clientOptions := options.Client().ApplyURI(connectionString)
 
-	client, err := mongo.connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,7 +81,7 @@ func TaskComplete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	params := mux.Vars(r)
-	taskComplete(["id"])
+	taskComplete(params["id"])
 	json.NewEncoder(w).Encode(params["id"])
 }
 
@@ -89,7 +92,7 @@ func UndoTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	params := mux.Vars(r)
-	undoTask(["id"])
+	undoTask(params["id"])
 	json.NewEncoder(w).Encode(params["id"])
 }
 
@@ -100,7 +103,8 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	params := mux.Vars(r)
-	deleteOneTask(["id"])
+	deleteOneTask(params["id"])
+	json.NewEncoder(w).Encode(params["id"])
 
 }
 
@@ -109,7 +113,8 @@ func DeleteAllTasks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	count := deleteAllTasks()
-	json.NewDecoder(w).Encode(count)
+	//json.NewDecoder(w).Encode(count)
+	json.NewEncoder(w).Encode(count)
 
 }
 
@@ -117,39 +122,39 @@ func DeleteAllTasks(w http.ResponseWriter, r *http.Request) {
 
 func getAllTasks() []primitive.M {
 	cur, err := collection.Find(context.Background(), bson.D{{}})
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	var results []primitive.M
-	for cur.Next(context.Background()){
+	for cur.Next(context.Background()) {
 		var result bson.M
 		e := cur.Decode(&result)
-		if e != nil{
+		if e != nil {
 			log.Fatal(e)
 		}
 		results = append(results, result)
 	}
-	if err := cur.Err(); err != nil{
+	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
 	cur.Close(context.Background())
 	return results
 }
 
-func insertOneTask(task models.ToDoList){
-	insertResult, err := collection.insertOne(context.Background(), task)
-	if err != nil{
+func insertOneTask(task models.ToDoList) {
+	insertResult, err := collection.InsertOne(context.Background(), task)
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Inserted a single record", insertResult.InsertedID)
 }
 
-func taskComplete(task string){
+func taskComplete(task string) {
 	id, _ := primitive.ObjectIDFromHex(task)
-	filter := bson.M{"_id":id}
-	update := bson.M{"$set":bson.M{"status":true}}
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": bson.M{"status": true}}
 	result, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		log.Fatal(err)
@@ -158,20 +163,20 @@ func taskComplete(task string){
 
 }
 
-func undoTask(task string){
+func undoTask(task string) {
 	id, _ := primitive.ObjectIDFromHex(task)
-	filter := bson.M{"_id":id}
-	update := bson.M{"$set":bson.M{"status":false}}
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": bson.M{"status": false}}
 	result, err := collection.UpdateOne(context.Background(), filter, update)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("modified count:", result)
 }
 
-func deleteOneTask(task string){
+func deleteOneTask(task string) {
 	id, _ := primitive.ObjectIDFromHex(task)
-	filter := bson.M{"_id":id}
+	filter := bson.M{"_id": id}
 	delete, err := collection.DeleteOne(context.Background(), filter)
 	if err != nil {
 		log.Fatal(err)
@@ -180,7 +185,7 @@ func deleteOneTask(task string){
 
 }
 
-func deleteAllTasks() int64{
+func deleteAllTasks() int64 {
 	delete, err := collection.DeleteMany(context.Background(), bson.D{{}})
 	if err != nil {
 		log.Fatal(err)

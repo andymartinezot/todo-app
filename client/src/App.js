@@ -1,5 +1,5 @@
 import React from "react";
-import "./App.ccs";
+import "./App.css";
 import {Container} from "semantic-ui-react";
 import ToDoList from "./To-Do-List";
 
@@ -12,3 +12,5 @@ function App(){
     </div>
   )
 }
+
+export default App;
