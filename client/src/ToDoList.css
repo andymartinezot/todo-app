@@ -1,0 +1,27 @@
+.form-container {
+    display: flex;
+    align-items: center;
+  }
+
+.form-inline {
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-task {
+    flex-grow: 1;
+  }
+  
+  button.ui.icon.button {
+    padding: 1% 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  button.ui.button {
+    padding: 2em 5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
