@@ -68,44 +68,95 @@ func CreateTasks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+	// var task models.ToDoList
+	// json.NewDecoder(r.Body).Decode(&task)
+	// insertOneTask(task)
+	// json.NewEncoder(w).Encode(task)
+
 	var task models.ToDoList
-	json.NewDecoder(r.Body).Decode(&task)
+	err := json.NewDecoder(r.Body).Decode(&task)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	insertOneTask(task)
 	json.NewEncoder(w).Encode(task)
 }
 
-func TaskComplete(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/x-www-form-urlencoded")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "PUT")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+// func TaskComplete(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-type", "application/x-www-form-urlencoded")
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+// 	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+// 	params := mux.Vars(r)
+// 	taskComplete(params["id"])
+// 	json.NewEncoder(w).Encode(params["id"])
+// }
+
+func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	taskComplete(params["id"])
-	json.NewEncoder(w).Encode(params["id"])
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": bson.M{"status": true}}
+
+	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.NewEncoder(w).Encode(result)
+	fmt.Println("modified count:", result)
 }
+
+// func UndoTask(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-type", "application/x-www-form-urlencoded")
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+// 	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+// 	params := mux.Vars(r)
+// 	undoTask(params["id"])
+// 	json.NewEncoder(w).Encode(params["id"])
+// }
 
 func UndoTask(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/x-www-form-urlencoded")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "PUT")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
 	params := mux.Vars(r)
-	undoTask(params["id"])
-	json.NewEncoder(w).Encode(params["id"])
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": bson.M{"status": false}}
+
+	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.NewEncoder(w).Encode(result)
+	fmt.Println("modified count:", result)
 }
 
+// func DeleteTask(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-type", "application/x-www-form-urlencoded")
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+// 	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+// 	params := mux.Vars(r)
+// 	deleteOneTask(params["id"])
+// 	json.NewEncoder(w).Encode(params["id"])
+
+// }
+
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/x-www-form-urlencoded")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
 	params := mux.Vars(r)
-	deleteOneTask(params["id"])
-	json.NewEncoder(w).Encode(params["id"])
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	filter := bson.M{"_id": id}
 
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.NewEncoder(w).Encode(result)
+	fmt.Println("deleted document:", result)
 }
 
 func DeleteAllTasks(w http.ResponseWriter, r *http.Request) {
@@ -151,39 +202,39 @@ func insertOneTask(task models.ToDoList) {
 	fmt.Println("Inserted a single record", insertResult.InsertedID)
 }
 
-func taskComplete(task string) {
-	id, _ := primitive.ObjectIDFromHex(task)
-	filter := bson.M{"_id": id}
-	update := bson.M{"$set": bson.M{"status": true}}
-	result, err := collection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("modified count:", result)
+// func taskComplete(task string) {
+// 	id, _ := primitive.ObjectIDFromHex(task)
+// 	filter := bson.M{"_id": id}
+// 	update := bson.M{"$set": bson.M{"status": true}}
+// 	result, err := collection.UpdateOne(context.Background(), filter, update)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Println("modified count:", result)
 
-}
+// }
 
-func undoTask(task string) {
-	id, _ := primitive.ObjectIDFromHex(task)
-	filter := bson.M{"_id": id}
-	update := bson.M{"$set": bson.M{"status": false}}
-	result, err := collection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("modified count:", result)
-}
+// func undoTask(task string) {
+// 	id, _ := primitive.ObjectIDFromHex(task)
+// 	filter := bson.M{"_id": id}
+// 	update := bson.M{"$set": bson.M{"status": false}}
+// 	result, err := collection.UpdateOne(context.Background(), filter, update)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Println("modified count:", result)
+// }
 
-func deleteOneTask(task string) {
-	id, _ := primitive.ObjectIDFromHex(task)
-	filter := bson.M{"_id": id}
-	delete, err := collection.DeleteOne(context.Background(), filter)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("deleted document:", delete)
+// func deleteOneTask(task string) {
+// 	id, _ := primitive.ObjectIDFromHex(task)
+// 	filter := bson.M{"_id": id}
+// 	delete, err := collection.DeleteOne(context.Background(), filter)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Println("deleted document:", delete)
 
-}
+// }
 
 func deleteAllTasks() int64 {
 	delete, err := collection.DeleteMany(context.Background(), bson.D{{}})
