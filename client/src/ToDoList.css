@@ -20,8 +20,14 @@
   }
   
   button.ui.button {
-    padding: 2em 5em;
+    padding: 1em 2em;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .task-counter {
+    font-weight: bold;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; /* black border */
   }
