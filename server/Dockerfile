@@ -22,5 +22,9 @@ RUN ls -la /app
 # Expose port 9000 to the outside world
 EXPOSE 9000
 
+# Ensure the binary is executable
+RUN chmod +x ./main
+
 # Command to run the executable
-CMD ["./main"]
+CMD ["go", "run", "main.go"]
+#CMD ["./main"]
