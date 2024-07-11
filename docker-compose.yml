@@ -15,9 +15,9 @@ services:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
 
   backend:
-    build: ./server
-      # context: ./server
-      # dockerfile: Dockerfile
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "9000:9000"
@@ -28,20 +28,20 @@ services:
     volumes:
       - ./server:/app
 
-  # frontend:
-  #   build:
-  #     context: ./client
-  #     dockerfile: Dockerfile
-  #   container_name: frontend
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - REACT_APP_API_URL=http://localhost:9000
-  #   depends_on:
-  #     - backend
-  #   volumes:
-  #     - ./client:/app
-  #   command: ["npm", "start"]
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:9000
+    depends_on:
+      - backend
+    volumes:
+      - ./client:/app
+    command: ["npm", "start"]
 
 volumes:
   mongo-data:
